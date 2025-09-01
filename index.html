@@ -22,9 +22,12 @@
       border-radius: 12px;
       background-size: cover;
       image-rendering: pixelated;
+      touch-action: none; /*desactiva el scroll y zoom tactil*/
+      max-width: 92vw;
+      max-height: 80vh;
     }
     .hud { font-size: 14px; opacity: .9; }
-    img#sprite, img#bricks { display: none; } /* Oculta hojas de sprite */
+    img#sprite, img#bricks, img#bricksdos { display: none; } /* Oculta hojas de sprite */
   </style>
 </head>
 <body>
@@ -39,6 +42,7 @@
   <!-- Pon aquí tus sprites si los tienes; si no, el juego usa rectángulos -->
   <img id="sprite" src="./sprite.png" alt="sprite paddle" />
   <img id="bricks" src="./bricks.png" alt="sprite bricks" />
+  <img id ="bricksdos" src="./bricks2.png" alt="broken bricks">
 
   <script src="main.js" defer></script>
 </body>

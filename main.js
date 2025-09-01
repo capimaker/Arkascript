@@ -3,14 +3,19 @@ const canvas = document.querySelector('canvas');
 
   const $sprite = document.querySelector('#sprite');
   const $bricks = document.querySelector('#bricks');
+  const $bricksdos = document.querySelector('#bricksdos');
 
-  // Flags de sprites cargados (fallback a rectángulos si no hay imágenes)
+  // Flags de sprites cargados fallback a rectángulos si no hay imágenes
   let spriteOk = !!($sprite && $sprite.complete && $sprite.naturalWidth > 0);
   let bricksOk = !!($bricks && $bricks.complete && $bricks.naturalWidth > 0);
+  let bricksdosOk = !!($bricksdos && $bricksdos.complete && $bricksdos.naturalWidth > 0);
+  
   if ($sprite) $sprite.addEventListener('load', () => spriteOk = true);
   if ($sprite) $sprite.addEventListener('error', () => spriteOk = false);
   if ($bricks) $bricks.addEventListener('load', () => bricksOk = true);
   if ($bricks) $bricks.addEventListener('error', () => bricksOk = false);
+  if ($bricksdos) $bricksdos.addEventListener('load', () => bricksdosOk = true);
+  if ($bricksdos) $bricksdos.addEventListener('error', () => bricksdosOk = false);
 
   // Estado de juego y constantes globales
   let score = 0;
@@ -24,7 +29,7 @@ const canvas = document.querySelector('canvas');
   let x, y, dx, dy;
 
   // Pala y su movimiento
-  const paddleHeight = 20;
+  const paddleHeight = 30;
   const paddleWidth  = 90;
   const paddleSpeed  = 7;
   let paddleX, paddleY;
@@ -39,6 +44,9 @@ const canvas = document.querySelector('canvas');
   const brickPadding = 5;
   const brickOffsetTop = 35;
   const brickOffsetLeft = 60;
+
+  const BRICK_TILE_W = 32;
+  const BRICK_TILE_H = 16;
 
   const BRICK_STATUS = {
     ACTIVE: 1,
@@ -111,24 +119,32 @@ const canvas = document.querySelector('canvas');
   }
 
   function drawBricks() {
-    for (let c = 0; c < brickColumnCount; c++) {
-      for (let r = 0; r < brickRowCount; r++) {
-        const b = bricks[c][r];
-        if (b.status === BRICK_STATUS.DESTROYED) continue;
+  for (let c = 0; c < brickColumnCount; c++) {
+    for (let r = 0; r < brickRowCount; r++) {
+      const b = bricks[c][r];
+      if (b.status === BRICK_STATUS.DESTROYED) continue;
 
-        if (bricksOk) {
-          const clipX = b.color * 32; // ancho del tile en la hoja
-          const clipW = 32, clipH = 16;
-          ctx.drawImage($bricks, clipX, 0, clipW, clipH, b.x, b.y, brickWidth, brickHeight);
-        } else {
-          ctx.fillStyle = b.status === BRICK_STATUS.ACTIVE ? '#d9eb38' : '#f59f00';
-          ctx.fillRect(b.x, b.y, brickWidth, brickHeight);
-          ctx.strokeStyle = '#000';
-          ctx.strokeRect(b.x, b.y, brickWidth, brickHeight);
-        }
+      // Elegimos hoja según estado: ACTIVE -> bricks, HIT -> bricksdos
+      const isHit = (b.status === BRICK_STATUS.HIT);
+      const sheet = isHit ? $bricksdos : $bricks;
+      const sheetOk = isHit ? bricksdosOk : bricksOk;
+
+      if (sheetOk) {
+        const clipX = b.color * (BRICK_TILE_W || 32);
+        const clipW = (BRICK_TILE_W || 32);
+        const clipH = (BRICK_TILE_H || 16);
+        ctx.drawImage(sheet, clipX, 0, clipW, clipH, b.x, b.y, brickWidth, brickHeight);
+      } else {
+        // Fallback a rectángulos si falta alguna hoja
+        ctx.fillStyle = isHit ? '#f59f00' : '#d9eb38';
+        ctx.fillRect(b.x, b.y, brickWidth, brickHeight);
+        ctx.strokeStyle = '#000';
+        ctx.strokeRect(b.x, b.y, brickWidth, brickHeight);
       }
     }
   }
+}
+
 
   function drawScore() {
     ctx.font = '16px system-ui, sans-serif';
@@ -300,14 +316,14 @@ const canvas = document.querySelector('canvas');
     drawScore();
 
     if (paused) {
-      drawOverlay('PAUSA (P para continuar)');
+      drawOverlay('PAUSE (P to continue)');
     } else if (!isGameOver && !isGameWon) {
       paddleMovement();
       ballMovement();
       collisionDetection();
       checkWin();
     } else {
-      drawOverlay(isGameWon ? '¡Has ganado! Pulsa R para reiniciar' : 'Game Over — Pulsa R para reiniciar');
+      drawOverlay(isGameWon ? 'YOU WIN! Press R to restart' : 'Game Over — Press R to restart');
     }
 
     requestAnimationFrame(draw);
