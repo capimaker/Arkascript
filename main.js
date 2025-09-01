@@ -108,7 +108,7 @@ const canvas = document.querySelector('canvas');
   function drawPaddle() {
     if (spriteOk) {
       // Ajusta estos valores según tu spritesheet
-      const sx = 29, sy = 174, sw = 58, sh = 16; // tamaño probable de un trozo de sprite
+      const sx = 27, sy = 174, sw = 58, sh = 16; // tamaño probable de un trozo de sprite
       ctx.drawImage($sprite, sx, sy, sw, sh, paddleX, paddleY, paddleWidth, paddleHeight);
     } else {
       ctx.fillStyle = '#4cc9f0';
